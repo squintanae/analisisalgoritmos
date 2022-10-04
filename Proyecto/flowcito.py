@@ -30,22 +30,7 @@ class TABLERO:
         self.posActual = Vector2(0,0)
         self.activo = False
 
-    def printCol(self):
-        for i in range(numCeldas):
-            for j in range(numCeldas):
-                print(self.tablero[i][j].color)
-            print("")
-        print("acabe print color")
-        for i in range(numCeldas):
-            for j in range(numCeldas):
-                print(self.tablero[i][j].punto)
-            print("")
-        print("acabe print punto")
-        for i in range(numCeldas):
-            for j in range(numCeldas):
-                print(self.tablero[i][j].puntoColor)
-            print("")
-        print("acabe print puntoColor")
+    
 
     def borrar(self):
         for i in range(numCeldas):
@@ -73,11 +58,9 @@ class TABLERO:
                     posY = int(self.posActual[1])
 
                     if self.tablero[ posY ][posX].color != self.colorActual and  self.tablero[ posY ][posX].color != 0 and self.tablero[ posY ][posX].punto != True:
-                        print("corte aqui")
                         self.cortar(self.tablero[ posY ][posX].color, self.tablero[ posY ][posX].longitud)
 
                     if self.tablero[ posY ][posX].color == self.colorActual and self.tablero[ posY ][posX].longitud< long+1:
-                        print("corte en el otro aqui")
                         self.cortar(self.tablero[ posY ][posX].color, self.tablero[ posY ][posX].longitud)
                         self.tablero[ posY ][posX].direccionSiguiente = Vector2(0,0)
 
@@ -134,14 +117,43 @@ class TABLERO:
             test_surface = pygame.Surface((grosorCuadricula, tamCuadricula ))
             test_surface.fill(colorCuadricula)
             screen.blit(test_surface, (offsetX + (grosorCuadricula+tamCuadrito)*i,offsetY))
+        
+        if numCeldas != 2: 
+            izqIma = pygame.image.load('izq.png')
+            screen.blit(izqIma,(120, 500))
 
-       
+        if numCeldas != 7:
+            derIma = pygame.image.load('der.png')
+            screen.blit(derIma,(375, 500))
+        mov = -7
+        movY=20
+        font = pygame.font.Font("NotoSans-Regular.ttf", 70)
+        textsurface = font.render('f', False, rojo)
+        screen.blit(textsurface,(160+mov, movY))
+        textsurface = font.render('l', False, verde)
+        screen.blit(textsurface,(186+mov, movY))
+        textsurface = font.render('o', False, azul)
+        screen.blit(textsurface,(200+mov, movY))
+        textsurface = font.render('w', False, amarillo)
+        screen.blit(textsurface,(240+mov, movY))
+        textsurface = font.render('free', False, (200, 200, 200))
+        screen.blit(textsurface,(320+mov, movY))
+
+        global ganoJueg
+        if ganoJuego == True:
+            font = pygame.font.Font("NotoSans-Bold.ttf", 23)
+            textsurface = font.render('Ganaste :)', False, (230,192,233))
+            screen.blit(textsurface,(240, 505))
 
     def dibujarCeldas(self):
         for i in range(numCeldas):
             for j in range(numCeldas):
                 if self.tablero[j][i].punto== True:
                     if self.tablero[j][i].color!=0:  
+                        test_surface = pygame.Surface((tamCuadrito+1, tamCuadrito+1 ))
+                        test_surface.fill(colores[self.tablero[j][i].color])
+                        screen.blit(test_surface,(offsetX+grosorCuadricula+(i*(tamCuadrito+grosorCuadricula)),offsetY+ grosorCuadricula+(j*(tamCuadrito+grosorCuadricula))))
+                    else: 
                         test_surface = pygame.Surface((tamCuadrito+1, tamCuadrito+1 ))
                         test_surface.fill(colores[self.tablero[j][i].color])
                         screen.blit(test_surface,(offsetX+grosorCuadricula+(i*(tamCuadrito+grosorCuadricula)),offsetY+ grosorCuadricula+(j*(tamCuadrito+grosorCuadricula))))
@@ -176,7 +188,7 @@ class TABLERO:
             self.colorActual = self.tablero[y][x].color
             self.activo = True
 
-    def verificarGandaor(self):
+    def verificarGanador(self):
 
         ganador=True
         for i in range(numCeldas):
@@ -184,7 +196,9 @@ class TABLERO:
                 if self.tablero[i][j].color == 0:
                     ganador = False
         if ganador == True:
-            print("GANOOOOO")
+            global ganoJuego
+            ganoJuego = True
+            
 
 class MAIN:
     def __init__(self):
@@ -195,20 +209,22 @@ class MAIN:
     def seleccionarPunto(self, pos):
         self.tab.puntoSeleccionado(pos)
     def verificar(self):
-        self.tab.verificarGandaor()
+        if ganoJuego == False:
+            self.tab.verificarGanador()
+   
     
 
 pygame.init() 
 tamJuego = 600
 tamCuadricula = 350
-numCeldas = 6
+numCeldas = 2
 grosorCuadricula = 2
 offsetX = 120
 offsetY = 120
 tamCuadrito = (tamCuadricula- ((numCeldas+1)*grosorCuadricula))/numCeldas
 
 colorCuadricula = (141, 117, 117)
-colorFondo = (61, 38, 38 )
+colorFondo = (0, 0, 0 )
 rojo = (234, 63, 63)
 amarillo = (246, 242,7)
 azul = (30, 60, 246)
@@ -220,7 +236,7 @@ negro =(38, 33, 40 )
 
 colores = [negro, rojo, amarillo, azul, verde,lila, naranja]
 
-
+ganoJuego = False
 
 screen = pygame.display.set_mode((tamJuego,tamJuego))
 clock = pygame.time.Clock()
@@ -250,10 +266,24 @@ while True:
 
         if event.type == SCREEN_UPDATE:
             main_game.verificar()
+                
 
         if event.type == pygame.MOUSEBUTTONUP:
             selecInicial= True
             pos = pygame.mouse.get_pos()
+            if pos[0]>121 and pos[0]<211 and pos[1]>503 and pos[1]<541:
+                if numCeldas != 2:
+                    ganoJuego = False
+                    numCeldas= numCeldas-1
+                    tamCuadrito = (tamCuadricula- ((numCeldas+1)*grosorCuadricula))/numCeldas
+                    main_game = MAIN()
+            
+            if pos[0]>375 and pos[0]<470 and pos[1]>502 and pos[1]<542:
+                if numCeldas != 7:
+                    ganoJuego = False
+                    numCeldas= numCeldas+1
+                    tamCuadrito = (tamCuadricula- ((numCeldas+1)*grosorCuadricula))/numCeldas
+                    main_game = MAIN()
 
             indi= posMouse(pos[0], pos[1])
             if indi[0]!=-1:
