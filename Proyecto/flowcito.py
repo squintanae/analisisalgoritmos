@@ -118,11 +118,11 @@ class TABLERO:
             test_surface.fill(colorCuadricula)
             screen.blit(test_surface, (offsetX + (grosorCuadricula+tamCuadrito)*i,offsetY))
         
-        if numCeldas != 2: 
+        if numCeldas != tabMin: 
             izqIma = pygame.image.load('izq.png')
             screen.blit(izqIma,(120, 500))
 
-        if numCeldas != 7:
+        if numCeldas != tabMax:
             derIma = pygame.image.load('der.png')
             screen.blit(derIma,(375, 500))
         mov = -7
@@ -215,9 +215,11 @@ class MAIN:
     
 
 pygame.init() 
+tabMin= 5
+tabMax =10
 tamJuego = 600
 tamCuadricula = 350
-numCeldas = 2
+numCeldas = 5
 grosorCuadricula = 2
 offsetX = 120
 offsetY = 120
@@ -225,16 +227,21 @@ tamCuadrito = (tamCuadricula- ((numCeldas+1)*grosorCuadricula))/numCeldas
 
 colorCuadricula = (141, 117, 117)
 colorFondo = (0, 0, 0 )
-rojo = (234, 63, 63)
-amarillo = (246, 242,7)
-azul = (30, 60, 246)
-verde = (30, 246, 57)
-lila = (255, 10, 201)
-naranja = (250, 137, 0)
+
+
+rojo=(253,1,0) 
+verde=(0,141,0) 
+azul=(12,42,254)
+amarillo=(233,224,0)
+naranja=(250,137,0) 
+magenta=(255,10,201) 
+celeste=(7,252,253) 
+morado=(129,0,127)
+vinotinto=(167,42,40)
 
 negro =(38, 33, 40 )
 
-colores = [negro, rojo, amarillo, azul, verde,lila, naranja]
+colores = [negro, rojo, verde, azul, amarillo,naranja, magenta,celeste,morado,vinotinto]
 
 ganoJuego = False
 
@@ -272,14 +279,14 @@ while True:
             selecInicial= True
             pos = pygame.mouse.get_pos()
             if pos[0]>121 and pos[0]<211 and pos[1]>503 and pos[1]<541:
-                if numCeldas != 2:
+                if numCeldas != tabMin:
                     ganoJuego = False
                     numCeldas= numCeldas-1
                     tamCuadrito = (tamCuadricula- ((numCeldas+1)*grosorCuadricula))/numCeldas
                     main_game = MAIN()
             
             if pos[0]>375 and pos[0]<470 and pos[1]>502 and pos[1]<542:
-                if numCeldas != 7:
+                if numCeldas != tabMax:
                     ganoJuego = False
                     numCeldas= numCeldas+1
                     tamCuadrito = (tamCuadricula- ((numCeldas+1)*grosorCuadricula))/numCeldas
