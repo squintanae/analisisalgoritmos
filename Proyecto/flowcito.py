@@ -84,7 +84,6 @@ class TABLERO:
                 if self.tablero[i][j].color == color and self.tablero[i][j].longitud > longitud:
                     self.tablero[i][j].constructor()
                 if self.tablero[i][j].color == color and self.tablero[ i ][j].punto == True and self.tablero[i][j].longitud!=1:
-                    print("entreee aquiiii ")
                     self.tablero[i][j].color =0
                     self.tablero[i][j].puntoAnterior = Vector2(0,0)
 
