@@ -35,6 +35,7 @@ class TABLERO:
         self.nodosFinal = {}
         self.nodos = []
         self.dists = {}
+        self.ordenados = []
     
     def bordes(self):
         for i in range(numCeldas):
@@ -65,6 +66,17 @@ class TABLERO:
                 else :
                     self.tablero[i][j].bordes = 0
 
+
+    def ordenar(self):
+        numeros=list(self.dists)
+        for i in range(0,len(self.dists)):
+            min=self.dists[numeros[0]]
+            for numero in self.dists:
+                if self.dists[numero]<min:
+                    min=self.dists[numero]
+            self.ordenados.append(numero)         
+            self.dists.pop(numero)
+
     def inicioSolucion(self):
         
         global ganoJueg
@@ -82,6 +94,7 @@ class TABLERO:
                         else: #si no el nodo es un nodo inicial 
                             self.nodosInicio[color] = [fila,columna]   
                         self.nodos.append([fila,columna,color]) #CONTIENE TODOS LOS PUNTOS SEA INICIO O FINAL
+        self.ordenar()
         return self.solucion()
 
     def revisar(self):
@@ -173,13 +186,16 @@ class TABLERO:
         return True
 
     def solucion(self):
-        time.sleep(0)
+        self.dibujarCeldas()
+        pygame.display.update()
+        time.sleep(0.2)
         if self.revisar() == False:
             return False
         if self.ganamos() == True:
             return True
         
-        for color in self.nodosInicio:
+        for color in self.ordenados:
+            
             nodoInicio = self.nodosInicio[color]
             nodoFinal = self.nodosFinal[color]
             if  ( (abs(nodoFinal[0]-nodoInicio[0]) + abs(nodoFinal[1]-nodoInicio[1]))>1):
