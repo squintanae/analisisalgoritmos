@@ -1,3 +1,4 @@
+import time
 from matplotlib import offsetbox
 import pygame, sys
 import numpy as np
@@ -13,6 +14,7 @@ class CUADRADO:
         self.direccionSiguiente = Vector2(0,0)
         self.puntoAnterior = Vector2(-1,-1)
         self.longitud = 0
+        self.bordes =0 
     def constructor(self):
         self.color = 0 #Color actual de la celda
         self.punto = False #booleano indica si es un punto
@@ -29,15 +31,315 @@ class TABLERO:
         self.colorActual = 0
         self.posActual = Vector2(0,0)
         self.activo = False
-
+        self.nodosInicio = {} #GUARDA LA FILA Y LA COLUMA, ES UNA DUPLA [row,column]  
+        self.nodosFinal = {}
+        self.nodos = []
+        self.dists = {}
     
+    def bordes(self):
+        for i in range(numCeldas):
+            for j in range(numCeldas):
+                if self.tablero[i][j].puntoColor>0:
+                    self.tablero[i][j].color = self.tablero[i][j].puntoColor
+                if i == 0 and j== 0 :
+                    self.tablero[i][j].bordes = 1
+                    
+                elif  i == 0 and j== numCeldas-1 :
+                    self.tablero[i][j].bordes = 2
+                    
+                    
+                elif  i == numCeldas-1 and j== 0 :
+                    self.tablero[i][j].bordes = 3
+
+                elif  i == numCeldas-1 and j==numCeldas-1 :
+                    self.tablero[i][j].bordes = 4                
+                elif  i == 0 :
+                    self.tablero[i][j].bordes = 5
+                elif  j== 0 :
+                    self.tablero[i][j].bordes = 6
+                elif  i == numCeldas-1 :
+                    self.tablero[i][j].bordes = 7
+                elif  j== numCeldas-1 :
+                    self.tablero[i][j].bordes = 8
+
+                else :
+                    self.tablero[i][j].bordes = 0
+
+    def inicioSolucion(self):
+        
+        global ganoJueg
+        if ganoJuego == False:
+            self.borrar()
+            self.bordes()
+            
+            for fila in range (numCeldas):  #Recorre la matriz
+                for columna in range (numCeldas):
+                    color = self.tablero[fila][columna].puntoColor
+                    if self.tablero[fila][columna].punto == True: #Si es un color, revisar si es una bola  
+                        if color in self.nodosInicio: #busca cuales son los nodos de final a medida que recorre
+                            self.nodosFinal[color] = [fila,columna]   
+                            self.dists[color] = abs(fila-self.nodosInicio[color][0]) + abs(columna-self.nodosInicio[color][1]) #DISTANCIA ENTRE AMBOS  NODOS, SUMA LA DIF EN X Y EN Y
+                        else: #si no el nodo es un nodo inicial 
+                            self.nodosInicio[color] = [fila,columna]   
+                        self.nodos.append([fila,columna,color]) #CONTIENE TODOS LOS PUNTOS SEA INICIO O FINAL
+        return self.solucion()
+
+    def revisar(self):
+        for i in range(numCeldas):
+            for j in range(numCeldas):
+                if self.tablero[i][j].color >0:
+                    color = self.tablero[i][j].color
+                    #CASO IDEAL
+                    if self.tablero[i][j].bordes == 0:
+                        if self.tablero[i+1][j].color >0  and  self.tablero[i+1][j].color != color:
+                            if self.tablero[i-1][j].color >0  and  self.tablero[i-1][j].color != color:
+                                if self.tablero[i][j+1].color >0  and  self.tablero[i][j+1].color != color:
+                                    if self.tablero[i][j-1].color >0  and  self.tablero[i][j-1].color != color:
+                                        return False
+                    
+                        if self.tablero[i+1][j].color == color and self.tablero[i-1][j].color == color and self.tablero[i][j+1].color == color:
+                            return False
+                        elif self.tablero[i+1][j].color == color and self.tablero[i-1][j].color == color and self.tablero[i][j-1].color == color:
+                            return False
+                        elif self.tablero[i+1][j].color == color and self.tablero[i][j+1].color == color and self.tablero[i][j-1].color == color:
+                            return False
+                        elif self.tablero[i-1][j].color == color and self.tablero[i][j+1].color == color and self.tablero[i][j-1].color == color:
+                            return False
+
+                    #CASO ESQUINA IZQUIERDA ARRIBA
+                    elif self.tablero[i][j].bordes == 1:
+                        if self.tablero[i+1][j].color >0  and  self.tablero[i+1][j].color != color:
+                            if self.tablero[i][j+1].color >0  and  self.tablero[i][j+1].color != color:
+                                return False
+
+                    #CASO ESQUINA DERECHA ARRIBA
+                    elif self.tablero[i][j].bordes == 2:
+                        if self.tablero[i+1][j].color >0  and  self.tablero[i+1][j].color != color:
+                            if self.tablero[i][j-1].color >0  and  self.tablero[i][j-1].color != color:
+                                return False
+
+                    #CASO ESQUINA IZQUIERDA ABAJO
+                    elif self.tablero[i][j].bordes == 3:
+                        
+                        if self.tablero[i-1][j].color >0  and  self.tablero[i-1][j].color != color:
+                            if self.tablero[i][j+1].color >0  and  self.tablero[i][j+1].color != color:
+                                return False
+
+                    #CASO ESQUINA DERECHA ABAJO
+                    elif self.tablero[i][j].bordes == 4:
+                        if self.tablero[i-1][j].color >0  and  self.tablero[i-1][j].color != color:
+                            if self.tablero[i][j-1].color >0  and  self.tablero[i][j-1].color != color:
+                                return False
+                                
+                    #BORDE SUPERIOR
+                    elif self.tablero[i][j].bordes == 5:
+                        if self.tablero[i+1][j].color >0  and  self.tablero[i+1][j].color != color:
+                            if self.tablero[i][j+1].color >0  and  self.tablero[i][j+1].color != color:
+                                if self.tablero[i][j-1].color >0  and  self.tablero[i][j-1].color != color:
+                                    return False
+        
+                        if self.tablero[i+1][j].color == color and self.tablero[i][j+1].color == color and self.tablero[i][j-1].color == color:
+                            return False
+                    
+                    #BORDE IZQUIERDO
+                    elif self.tablero[i][j].bordes == 6:
+                        if self.tablero[i+1][j].color >0  and  self.tablero[i+1][j].color != color:
+                            if self.tablero[i-1][j].color >0  and  self.tablero[i-1][j].color != color:
+                                if self.tablero[i][j+1].color >0  and  self.tablero[i][j+1].color != color:
+                                    return False
+                    
+                        if self.tablero[i+1][j].color == color and self.tablero[i-1][j].color == color and self.tablero[i][j+1].color == color:
+                            return False
+                    
+                    #BORDE INFERIOR
+                    elif self.tablero[i][j].bordes == 7:
+                        if self.tablero[i-1][j].color >0  and  self.tablero[i-1][j].color != color:
+                            if self.tablero[i][j+1].color >0  and  self.tablero[i][j+1].color != color:
+                                if self.tablero[i][j-1].color >0  and  self.tablero[i][j-1].color != color:
+                                    return False
+        
+                        if self.tablero[i-1][j].color == color and self.tablero[i][j+1].color == color and self.tablero[i][j-1].color == color:
+                            return False
+                        
+                    #BORDE DERECHO
+                    elif self.tablero[i][j].bordes == 8:
+                        if self.tablero[i+1][j].color >0  and  self.tablero[i+1][j].color != color:
+                            if self.tablero[i-1][j].color >0  and  self.tablero[i-1][j].color != color:
+                                if self.tablero[i][j-1].color >0  and  self.tablero[i][j-1].color != color:
+                                    return False
+                    
+                        if self.tablero[i+1][j].color == color and self.tablero[i-1][j].color == color and self.tablero[i][j-1].color == color:
+                            return False
+        return True
+
+    def solucion(self):
+        time.sleep(0)
+        if self.revisar() == False:
+            return False
+        if self.ganamos() == True:
+            return True
+        
+        for color in self.nodosInicio:
+            nodoInicio = self.nodosInicio[color]
+            nodoFinal = self.nodosFinal[color]
+            if  ( (abs(nodoFinal[0]-nodoInicio[0]) + abs(nodoFinal[1]-nodoInicio[1]))>1):
+                direcciones = []
+                #CASO IDEAL 
+                if self.tablero[ nodoInicio[0] ][nodoInicio[1]].bordes ==0:
+                    if self.tablero[ nodoInicio[0] ][nodoInicio[1]+1].color ==0:
+                        direcciones.append("derecha")
+                    
+                    if self.tablero[ nodoInicio[0] ][nodoInicio[1]-1].color==0:
+                        direcciones.append("toy")
+
+                    if self.tablero[ nodoInicio[0]+1 ][nodoInicio[1]].color==0:
+                        direcciones.append("abajo")
+                    
+                    if self.tablero[ nodoInicio[0]-1 ][nodoInicio[1]].color==0:
+                        direcciones.append("arriba")
+
+                elif self.tablero[ nodoInicio[0] ][nodoInicio[1]].bordes ==1:
+                    if self.tablero[ nodoInicio[0] ][nodoInicio[1]+1].color ==0:
+                        direcciones.append("derecha")
+
+                    if self.tablero[ nodoInicio[0]+1 ][nodoInicio[1]].color==0:
+                        direcciones.append("abajo")
+                #CASO ESQUINA DERECHA ARRIBA
+                elif self.tablero[ nodoInicio[0] ][nodoInicio[1]].bordes ==2:
+                    
+                    if self.tablero[ nodoInicio[0] ][nodoInicio[1]-1].color==0:
+                        direcciones.append("izquierda")
+
+                    if self.tablero[ nodoInicio[0]+1 ][nodoInicio[1]].color==0:
+                        direcciones.append("abajo")
+                    
+                #CASO ESQUINA IZQUIERDA ABAJO 
+                elif self.tablero[ nodoInicio[0] ][nodoInicio[1]].bordes ==3:
+
+                    if self.tablero[ nodoInicio[0] ][nodoInicio[1]+1].color ==0:
+                        direcciones.append("derecha")
+                    
+                    if self.tablero[ nodoInicio[0]-1 ][nodoInicio[1]].color==0:
+                        direcciones.append("arriba")
+
+                #CASO ESQUINA DERECHA ABAJO
+                elif self.tablero[ nodoInicio[0] ][nodoInicio[1]].bordes ==4:
+
+                    
+                    if self.tablero[ nodoInicio[0] ][nodoInicio[1]-1].color==0:
+                        direcciones.append("toy")
+
+                    if self.tablero[ nodoInicio[0]-1 ][nodoInicio[1]].color==0:
+                        direcciones.append("arriba")
+                
+                #CASO BORDE SUPERIOR
+                elif self.tablero[ nodoInicio[0] ][nodoInicio[1]].bordes ==5:
+
+                    if self.tablero[ nodoInicio[0] ][nodoInicio[1]+1].color ==0:
+                        direcciones.append("derecha")
+                    
+                    if self.tablero[ nodoInicio[0] ][nodoInicio[1]-1].color==0:
+                        direcciones.append("toy")
+
+                    if self.tablero[ nodoInicio[0]+1 ][nodoInicio[1]].color==0:
+                        direcciones.append("abajo")
+                    
+                #CASO BORDE IZQUIERDO
+                elif self.tablero[ nodoInicio[0] ][nodoInicio[1]].bordes ==6:
+
+                    if self.tablero[ nodoInicio[0] ][nodoInicio[1]+1].color ==0:
+                        direcciones.append("derecha")
+  
+                    if self.tablero[ nodoInicio[0]+1 ][nodoInicio[1]].color==0:
+                        direcciones.append("abajo")
+                    
+                    if self.tablero[ nodoInicio[0]-1 ][nodoInicio[1]].color==0:
+                        direcciones.append("arriba")
+                
+                #CASO BORDE ABAJO
+                elif self.tablero[ nodoInicio[0] ][nodoInicio[1]].bordes ==7:
+
+                    if self.tablero[ nodoInicio[0] ][nodoInicio[1]+1].color ==0:
+                        direcciones.append("derecha")
+                    
+                    if self.tablero[ nodoInicio[0] ][nodoInicio[1]-1].color==0:
+                        direcciones.append("toy")
+                    
+                    if self.tablero[ nodoInicio[0]-1 ][nodoInicio[1]].color==0:
+                        direcciones.append("arriba")
+
+                #CASO BORDE DERECHO
+                elif self.tablero[ nodoInicio[0] ][nodoInicio[1]].bordes ==8:
+                    
+                    if self.tablero[ nodoInicio[0] ][nodoInicio[1]-1].color==0:
+                        direcciones.append("toy")
+
+                    if self.tablero[ nodoInicio[0]+1 ][nodoInicio[1]].color==0:
+                        direcciones.append("abajo")
+                    
+                    if self.tablero[ nodoInicio[0]-1 ][nodoInicio[1]].color==0:
+                        direcciones.append("arriba")
+                
+
+                if len(direcciones)==0:
+                    return False
+                
+                for d in direcciones:
+                    if d == "derecha" and nodoInicio[1]+1 < numCeldas:
+                        nodoInicio[1]+=1
+                        self.tablero[ nodoInicio[0] ][nodoInicio[1]].color = color
+                        if self.solucion() == True:
+                            return True
+                        else:
+                            self.tablero[ nodoInicio[0] ][nodoInicio[1]].color = 0
+                            nodoInicio[1]-=1
+                    
+                    elif d == "toy" and nodoInicio[1]-1 >= 0:
+                        nodoInicio[1]-=1
+                        self.tablero[ nodoInicio[0] ][nodoInicio[1]].color = color 
+                        if self.solucion() == True:
+                            return True
+                        else:
+                            self.tablero[ nodoInicio[0] ][nodoInicio[1]].color = 0
+                            nodoInicio[1]+=1
+
+                    elif d == "arriba" and nodoInicio[0]-1 >= 0:
+                        nodoInicio[0]-=1
+                        self.tablero[ nodoInicio[0] ][nodoInicio[1]].color = color
+                        if self.solucion() == True:
+                            return True
+                        else:
+                            self.tablero[ nodoInicio[0] ][nodoInicio[1]].color = 0
+                            nodoInicio[0]+=1
+
+                    elif d == "abajo" and nodoInicio[0] < numCeldas:
+                        nodoInicio[0]+=1
+                        self.tablero[ nodoInicio[0] ][nodoInicio[1]].color = color
+                        if self.solucion() == True:
+                            return True
+                        else:
+                            self.tablero[ nodoInicio[0] ][nodoInicio[1]].color = 0
+                            nodoInicio[0]-=1
+        return False                
+              
+
+    def ganamos(self):
+        ganador = True
+        for i in range(numCeldas):
+            for j in range(numCeldas):
+                if self.tablero[i][j].color == 0:
+                    ganador = False
+        return ganador
+                
 
     def borrar(self):
         for i in range(numCeldas):
             for j in range(numCeldas):
-                if self.tablero[i][j].color==0:
+                if self.tablero[i][j].color > 0:
+                    self.tablero[i][j].color=0
                     self.tablero[i][j].direccionSiguiente = Vector2(0,0)
                     self.tablero[i][j].longitud = 0
+
     def Mover(self,direccion):
         long = self.tablero[ int(self.posActual[1])][ int(self.posActual[0])].longitud 
         movAux = self.posActual + direccion
@@ -124,8 +426,12 @@ class TABLERO:
         if numCeldas != tabMax:
             derIma = pygame.image.load('der.png')
             screen.blit(derIma,(375, 500))
+
+        boton = pygame.image.load('botoncitoo.png')
+        screen.blit(boton,(193, 525))
+        
         mov = -7
-        movY=20
+        movY= 20
         font = pygame.font.Font("NotoSans-Regular.ttf", 70)
         textsurface = font.render('f', False, rojo)
         screen.blit(textsurface,(160+mov, movY))
@@ -188,7 +494,6 @@ class TABLERO:
             self.activo = True
 
     def verificarGanador(self):
-
         ganador=True
         for i in range(numCeldas):
             for j in range(numCeldas):
@@ -214,11 +519,11 @@ class MAIN:
     
 
 pygame.init() 
-tabMin= 5
+tabMin= 4
 tabMax =10
 tamJuego = 600
 tamCuadricula = 350
-numCeldas = 5
+numCeldas = 4
 grosorCuadricula = 2
 offsetX = 120
 offsetY = 120
@@ -239,8 +544,8 @@ morado=(129,0,127)
 vinotinto=(167,42,40)
 
 negro =(38, 33, 40 )
-
-colores = [negro, rojo, verde, azul, amarillo,naranja, magenta,celeste,morado,vinotinto]
+quintana = ( 101, 22, 32 )
+colores = [negro, rojo, verde, azul, amarillo,naranja, magenta,celeste,morado,vinotinto, quintana]
 
 ganoJuego = False
 
@@ -290,6 +595,13 @@ while True:
                     numCeldas= numCeldas+1
                     tamCuadrito = (tamCuadricula- ((numCeldas+1)*grosorCuadricula))/numCeldas
                     main_game = MAIN()
+
+            if pos[0]>222 and pos[0]<364 and pos[1]>553 and pos[1]<580:
+                resul = main_game.tab.inicioSolucion()
+                if resul == True:
+                    print("Solucionado")
+                else:
+                    print("No solucionado")
 
             indi= posMouse(pos[0], pos[1])
             if indi[0]!=-1:
