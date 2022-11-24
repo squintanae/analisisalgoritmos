@@ -2,14 +2,15 @@ Compilación:
 - Se debe instalar previamente la libreria pygame de Python
     * Comando para instalar la libreria con pip
           pip install pygame
-- Correr el archivo flowcito.py
+- Correr el archivo flowcito.py 
 
 Manual:
-- El juego tiene disponible 6 tableros desde 5x5 hasta 10x10.
+- El juego tiene disponible 5 tableros desde 4x4 hasta 8x8.
 - La interfaz cuenta con flechas a la izquierda y a la derecha para pasar de tablero en tablero, debe darle click a la flecha para pasar de tablero
 - Con clicks se ubica en el lugar de la cuadricula que se desea mover (debe ser una tuberia o un punto)
 - Una vez ubicado en un punto o en una tuberia ya se puede mover
 - Por medio de las flechas del teclado (arriba, abajo, izquierda y derecha) se mueve la tuberia en dirección a la flecha presionada
 - Gana el juego si todas las duplas de colores se encuentran conectadas por tuberias y toda la cuadricula tiene un color, el juego le inidicara si gana
+- En la parte inferior cuenta con un boton con el enunciado "Resolver" que al darle click el tablero se solucionara solo.
 
 
